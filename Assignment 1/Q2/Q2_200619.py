@@ -26,9 +26,6 @@ def solution(audio_path):
         filt = cv2.filter2D(src=filt, ddepth=-1, kernel=kernel)
         ret, filt = cv2.threshold(filt, 200, 255, cv2.THRESH_BINARY)
 
-
-    cv2.imwrite('n.png',filt)
-
     if np.max(np.average(filt, axis=0)) > 125:
         class_name = 'metal'
     else :

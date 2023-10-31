@@ -39,8 +39,8 @@ def solution(image_path):
 
     angle = np.rad2deg(np.arctan(box[2][1]/box[2][0]))
 
-    if(angle<0):
-        angle = angle + 180
+    # if(angle<0):
+    #     angle = angle + 180
 
 
 
@@ -53,13 +53,50 @@ def solution(image_path):
     rot_mat = cv2.getRotationMatrix2D((w/2,h/2), angle, 1.0)
     img = cv2.warpAffine(img, rot_mat, (h,w), flags=cv2.INTER_LINEAR)
 
-    # print(box,angle)
+    img1 = np.copy(img)
+    img2 = cv2.flip(img1, 0)
+    img2 = cv2.flip(img2, 1)
+
+    edges1 = cv2.Canny(img1, 50, 150)
+    edges2 = cv2.Canny(img2, 50, 150)
+
+    lines1 = cv2.HoughLines(edges1, 1, np.pi / 180, threshold=100)
+    lines2 = cv2.HoughLines(edges2, 1, np.pi / 180, threshold=100)
+
+    avg1 = []
+    avg2 = []
+
+    for line in lines1:
+        rho, theta = line[0]
+        a = np.cos(theta)
+        b = np.sin(theta)
+        y0 = b * rho
+        y1 = int(y0 + 1000 * (a))
+        y2 = int(y0 - 1000 * (a))
+        avg1.extend([y1,y2])
+
+    for line in lines2:
+        rho, theta = line[0]
+        a = np.cos(theta)
+        b = np.sin(theta)
+        y0 = b * rho
+        y1 = int(y0 + 1000 * (a))
+        y2 = int(y0 - 1000 * (a))
+        avg2.extend([y1,y2])
+
+    # avg1 = np.min(avg1)
+    # avg2 = np.min(avg2)
+
+    print(avg1, avg2)
+
+    if avg1 < avg2:
+        img = img1
+    else:
+        img = img2
 
     img = 255 - img
 
     img = img[int(h/2 - rech/2):int(h/2 + rech/2),int(w/2 - recw/2):int(w/2 + recw/2)]
-
-    cv2.imwrite('n.png',img)
 
     ############################
     ############################
@@ -68,4 +105,3 @@ def solution(image_path):
     # image = cv2.imread(image_path)
     return img
 
-solution('/mnt/common/DATA/Coding/github/EE604/Assignment 1/Q3/test/3_c.png')
